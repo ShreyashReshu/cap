@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: corporate-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: .
+    container_name: corporate-backend
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mongodb
+    environment:
+      SPRING_MONGODB_URI: mongodb://admin:password@corporate-mongo:27017/corporate_bank?authSource=admin
+      JWT_SECRET: ThisIsAVeryLongSecretKeyForTheCorporateBankingAppToSatisfyHS256Requirements
+
+  frontend:
+    build: ./loan-ui
+    container_name: corporate-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
