@@ -1,0 +1,197 @@
+<div class="container-lg py-5">
+  <div class="row mb-4">
+    <div class="col">
+      <h2><i class="bi bi-pencil-square me-2"></i>Edit Loan Application</h2>
+      <p class="text-muted">Update loan details (only available for DRAFT status)</p>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <form [formGroup]="loanForm" (ngSubmit)="onSubmit()" *ngIf="loan && loanForm" class="needs-validation" novalidate>
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Client Details -->
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Client Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="clientName" class="form-label fw-500">Client Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="clientName"
+                formControlName="clientName"
+                [ngClass]="{ 'is-invalid': submitted && f['clientName'].invalid }" />
+              <div *ngIf="submitted && f['clientName'].invalid" class="invalid-feedback d-block">
+                <div *ngIf="f['clientName'].hasError('required')">Client name is required</div>
+                <div *ngIf="f['clientName'].hasError('minlength')">Minimum 3 characters required</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Details -->
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Loan Details</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="loanType" class="form-label fw-500">Loan Type *</label>
+                <select class="form-select" id="loanType" formControlName="loanType"
+                  [ngClass]="{ 'is-invalid': submitted && f['loanType'].invalid }">
+                  <option *ngFor="let type of loanTypes" [value]="type.value">{{ type.label }}</option>
+                </select>
+                <div *ngIf="submitted && f['loanType'].invalid" class="invalid-feedback d-block">
+                  Loan type is required
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="requestedAmount" class="form-label fw-500">Requested Amount (₹) *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="requestedAmount"
+                  formControlName="requestedAmount"
+                  [ngClass]="{ 'is-invalid': submitted && f['requestedAmount'].invalid }" />
+                <div *ngIf="submitted && f['requestedAmount'].invalid" class="invalid-feedback d-block">
+                  <div *ngIf="f['requestedAmount'].hasError('required')">Amount is required</div>
+                  <div *ngIf="f['requestedAmount'].hasError('min')">Minimum amount is ₹100,000</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="proposedInterestRate" class="form-label fw-500">Proposed Interest Rate (%) *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="proposedInterestRate"
+                  step="0.01"
+                  formControlName="proposedInterestRate"
+                  [ngClass]="{ 'is-invalid': submitted && f['proposedInterestRate'].invalid }" />
+                <div *ngIf="submitted && f['proposedInterestRate'].invalid" class="invalid-feedback d-block">
+                  <div *ngIf="f['proposedInterestRate'].hasError('required')">Interest rate is required</div>
+                  <div *ngIf="f['proposedInterestRate'].hasError('min') || f['proposedInterestRate'].hasError('max')">Rate must be between 1% and 30%</div>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="tenureMonths" class="form-label fw-500">Tenure (months) *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="tenureMonths"
+                  formControlName="tenureMonths"
+                  [ngClass]="{ 'is-invalid': submitted && f['tenureMonths'].invalid }" />
+                <div *ngIf="submitted && f['tenureMonths'].invalid" class="invalid-feedback d-block">
+                  <div *ngIf="f['tenureMonths'].hasError('required')">Tenure is required</div>
+                  <div *ngIf="f['tenureMonths'].hasError('min') || f['tenureMonths'].hasError('max')">Tenure must be between 1 and 360 months</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Details -->
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Financial Details</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="revenue" class="form-label fw-500">Annual Revenue (₹) *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="revenue"
+                  formControlName="financials.revenue"
+                  [ngClass]="{ 'is-invalid': submitted && f['financials.revenue'].invalid }" />
+                <div *ngIf="submitted && f['financials.revenue'].invalid" class="invalid-feedback d-block">
+                  Revenue is required
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="ebitda" class="form-label fw-500">EBITDA (₹) *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="ebitda"
+                  formControlName="financials.ebitda"
+                  [ngClass]="{ 'is-invalid': submitted && f['financials.ebitda'].invalid }" />
+                <div *ngIf="submitted && f['financials.ebitda'].invalid" class="invalid-feedback d-block">
+                  EBITDA is required
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label for="rating" class="form-label fw-500">Credit Rating *</label>
+                <select class="form-select" id="rating" formControlName="financials.rating"
+                  [ngClass]="{ 'is-invalid': submitted && f['financials.rating'].invalid }">
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                </select>
+                <div *ngIf="submitted && f['financials.rating'].invalid" class="invalid-feedback d-block">
+                  Rating is required
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+          <button type="submit" class="btn btn-primary btn-lg" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ loading ? 'Saving...' : 'Save Changes' }}
+          </button>
+          <button type="button" class="btn btn-secondary btn-lg" (click)="cancel()" [disabled]="loading">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Info Sidebar -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-light border-bottom">
+            <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Loan Status</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <p class="text-muted small mb-1">Current Status</p>
+              <span [ngClass]="'badge ' + (loan.status === 'DRAFT' ? 'bg-secondary' : loan.status === 'SUBMITTED' ? 'bg-info' : 'bg-primary')">
+                {{ loan.status }}
+              </span>
+            </div>
+            <div class="alert alert-info small">
+              <i class="bi bi-lightbulb me-2"></i>
+              You can only edit loans with DRAFT status. Once submitted, contact your administrator for changes.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

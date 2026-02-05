@@ -1,0 +1,172 @@
+<div class="container-lg py-5">
+  <button class="btn btn-secondary mb-4" (click)="back()">
+    <i class="bi bi-chevron-left me-2"></i>Back to Loans
+  </button>
+
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && loan" class="row">
+    <div class="col-lg-8">
+      <!-- Basic Info Card -->
+      <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-light border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ loan.clientName }}</h5>
+            <span [ngClass]="'badge ' + (loan.status === 'DRAFT' ? 'bg-secondary' : loan.status === 'SUBMITTED' ? 'bg-info' : loan.status === 'UNDER_REVIEW' ? 'bg-warning' : loan.status === 'APPROVED' ? 'bg-success' : 'bg-danger')">
+              {{ loan.status }}
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Loan Type</p>
+              <p class="fw-500">{{ loan.loanType }}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Requested Amount</p>
+              <p class="fw-500">{{ loan.requestedAmount | currency:'INR':'symbol':'1.0-0' }}</p>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Proposed Interest Rate</p>
+              <p class="fw-500">{{ loan.proposedInterestRate }}%</p>
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Tenure</p>
+              <p class="fw-500">{{ loan.tenureMonths }} months</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financials Card -->
+      <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-light border-bottom">
+          <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Financial Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <p class="text-muted small mb-1">Annual Revenue</p>
+              <p class="fw-500">{{ loan.financials.revenue | currency:'INR':'symbol':'1.0-0' }}</p>
+            </div>
+            <div class="col-md-4">
+              <p class="text-muted small mb-1">EBITDA</p>
+              <p class="fw-500">{{ loan.financials.ebitda | currency:'INR':'symbol':'1.0-0' }}</p>
+            </div>
+            <div class="col-md-4">
+              <p class="text-muted small mb-1">Credit Rating</p>
+              <p class="fw-500">{{ loan.financials.rating }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Trail -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light border-bottom">
+          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Audit Trail</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loan.actions && loan.actions.length > 0" class="timeline">
+            <div *ngFor="let action of loan.actions" class="timeline-item mb-3 pb-3 border-bottom">
+              <div class="d-flex">
+                <div class="me-3">
+                  <div class="badge bg-info rounded-circle p-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-check2"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <p class="mb-1 fw-500">{{ action.action }}</p>
+                  <p class="text-muted small mb-1">By: {{ action.by }}</p>
+                  <p class="text-muted small mb-0">{{ action.timestamp | date:'short' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!loan.actions || loan.actions.length === 0" class="text-muted text-center py-3">
+            No actions yet
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    <div class="col-lg-4">
+      <!-- Approval Panel (Admin Only) -->
+      <div *ngIf="isAdmin && (loan.status === 'SUBMITTED' || loan.status === 'UNDER_REVIEW')" class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b !important;">
+        <div class="card-header" style="background: rgba(245, 158, 11, 0.2); border-bottom: 2px solid #f59e0b;">
+          <h6 class="mb-0"><i class="bi bi-check-circle me-2"></i>Approval Panel</h6>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="approvalForm" (ngSubmit)="approveLoan()">
+            <div class="mb-3">
+              <label class="form-label small fw-500">Sanctioned Amount (₹)</label>
+              <input type="number" class="form-control form-control-sm" formControlName="sanctionedAmount" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-500">Approved Interest Rate (%)</label>
+              <input type="number" class="form-control form-control-sm" step="0.01" formControlName="approvedInterestRate" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-500">Comments</label>
+              <textarea class="form-control form-control-sm" rows="2" formControlName="comments"></textarea>
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success btn-sm">
+                <i class="bi bi-check-circle me-1"></i>Approve
+              </button>
+              <button type="button" class="btn btn-danger btn-sm" (click)="rejectLoan()">
+                <i class="bi bi-x-circle me-1"></i>Reject
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <button *ngIf="!isAdmin && loan.status === 'DRAFT'" class="btn btn-primary w-100 mb-2" (click)="submitLoan()">
+            <i class="bi bi-send me-2"></i>Submit for Approval
+          </button>
+          <button class="btn btn-secondary w-100" (click)="back()">
+            <i class="bi bi-arrow-left me-2"></i>Back
+          </button>
+        </div>
+      </div>
+
+      <!-- Approval Info (Admin) -->
+      <div *ngIf="isAdmin && (loan.sanctionedAmount || loan.approvedInterestRate)" class="card border-0 shadow-sm mt-4 border-success">
+        <div class="card-header bg-success bg-opacity-10 border-success">
+          <h6 class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>Approval Details</h6>
+        </div>
+        <div class="card-body small">
+          <div class="mb-3">
+            <p class="text-muted mb-1">Sanctioned Amount</p>
+            <p class="fw-500">{{ loan.sanctionedAmount | currency:'INR':'symbol':'1.0-0' }}</p>
+          </div>
+          <div class="mb-3">
+            <p class="text-muted mb-1">Approved Interest Rate</p>
+            <p class="fw-500">{{ loan.approvedInterestRate }}%</p>
+          </div>
+          <div *ngIf="loan.approvedAt">
+            <p class="text-muted mb-1">Approved On</p>
+            <p class="fw-500">{{ loan.approvedAt | date:'short' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
