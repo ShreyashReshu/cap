@@ -21,10 +21,9 @@ public class AdminController {
             @RequestParam(required = false) Double amount,
             @RequestParam(required = false) Double rate,
             Authentication auth) {
-        // ✅ Matches LoanService method
         return service.approve(id, auth.getName(), amount, rate, approved);
     }
-    
+
     @DeleteMapping("/loans/{id}")
     public void delete(@PathVariable String id, Authentication auth) {
         service.softDelete(id, auth.getName());

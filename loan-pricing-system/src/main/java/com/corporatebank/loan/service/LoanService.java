@@ -28,7 +28,7 @@ public class LoanService {
     public Page<Loan> getAllLoans(Pageable page) {
         return loanRepo.findByDeletedFalse(page);
     }
-    
+
     public Loan getLoan(String id) {
         return loanRepo.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Loan not found"));
@@ -42,7 +42,7 @@ public class LoanService {
         loan.setClientName(updated.getClientName());
         loan.setLoanType(updated.getLoanType());
         loan.setRequestedAmount(updated.getRequestedAmount());
-        loan.setFinancials(updated.getFinancials()); // Update financials
+        loan.setFinancials(updated.getFinancials());
         loan.getActions().add(new LoanAction(user, "UPDATED", Instant.now()));
         return loanRepo.save(loan);
     }

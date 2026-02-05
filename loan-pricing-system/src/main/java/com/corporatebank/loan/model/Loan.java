@@ -5,6 +5,7 @@ import com.corporatebank.loan.model.enums.LoanType;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class Loan {
     private Integer tenureMonths;
     private Double proposedInterestRate;
 
-    private Financials financials; // ✅ Added Financials
+    private Financials financials;
 
     private LoanStatus status = LoanStatus.DRAFT;
 
@@ -32,11 +33,10 @@ public class Loan {
 
     private String createdBy;
     private Instant createdAt = Instant.now();
-    
+
     private boolean deleted = false;
     private List<LoanAction> actions = new ArrayList<>();
 
-    // ✅ Inner Class for Financials
     @Data
     public static class Financials {
         private Double revenue;

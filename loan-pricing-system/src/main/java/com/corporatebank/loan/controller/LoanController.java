@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/loans")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200") // Allow Angular
+@CrossOrigin(origins = "http://localhost:4200")
 public class LoanController {
 
     private final LoanService service;
